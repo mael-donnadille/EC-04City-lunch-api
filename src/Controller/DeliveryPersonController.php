@@ -42,8 +42,8 @@ class DeliveryPersonController extends AbstractController
     }
 
     #[Route('', name: 'delivery_person_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager): JsonResponse
-    {
+    public function create( Request $request,EntityManagerInterface $entityManager,UserPasswordHasherInterface $passwordHasher): JsonResponse    
+        {
         $data = json_decode($request->getContent(), true);
 
         if (!$data) {
@@ -68,7 +68,8 @@ class DeliveryPersonController extends AbstractController
         $deliveryPerson->setFirstname($data['firstname']);
         $deliveryPerson->setLastname($data['lastname']);
         $deliveryPerson->setEmail($data['email']);
-        $deliveryPerson->setPassword(password_hash($plainPassword, PASSWORD_BCRYPT));
+        $hashedPassword = $passwordHasher->hashPassword($deliveryPerson, $plainPassword);
+        $deliveryPerson->setPassword($hashedPassword);
         $deliveryPerson->setIsAvailable($data['isAvailable'] ?? true);
 
         $bag = new Bag();
@@ -119,8 +120,9 @@ class DeliveryPersonController extends AbstractController
         }
 
         if (!empty($data['password'])) {
-            $deliveryPerson->setPassword(password_hash($data['password'], PASSWORD_BCRYPT));
-        }
+            $hashedPassword = $passwordHasher->hashPassword($deliveryPerson, $data['password']);
+            $deliveryPerson->setPassword($hashedPassword);        
+            }
 
         $entityManager->flush();
 

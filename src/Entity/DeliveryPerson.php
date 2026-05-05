@@ -4,9 +4,12 @@ namespace App\Entity;
 
 use App\Repository\DeliveryPersonRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: DeliveryPersonRepository::class)]
-class DeliveryPerson
+class DeliveryPerson implements UserInterface, PasswordAuthenticatedUserInterface
+
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -104,7 +107,6 @@ class DeliveryPerson
 
     public function setBag(Bag $bag): static
     {
-        // set the owning side of the relation if necessary
         if ($bag->getDeliveryPerson() !== $this) {
             $bag->setDeliveryPerson($this);
         }
@@ -113,6 +115,18 @@ class DeliveryPerson
 
         return $this;
     }
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
 
+    public function getRoles(): array
+    {
+        return ['ROLE_DELIVERY_PERSON'];
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
    
 }
